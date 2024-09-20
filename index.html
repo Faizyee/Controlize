@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Dual Joystick Controls</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 16px;
+			font-weight: bold;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-evenly;
+			/* Center vertically */
+			align-items: center;
+			/* Center horizontally */
+			height: 100vh;
+			background-color: #f0f0f0;
+			user-select: none;
+		}
+
+		#main-container {
+			display: none;
+			/* Hide by default */
+			flex-direction: column;
+			justify-content: space-between;
+			width: 100vw;
+			height: 100vh;
+		}
+
+		.joystick-menu {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+		}
+
+		.joystick-status {
+			text-align: center;
+			margin: 10px 0;
+		}
+
+		.joystick-container {
+			display: flex;
+			justify-content: space-around;
+			width: 100%;
+			padding-bottom: 30px;
+		}
+
+		.joystick-base {
+			border: 2px solid gray;
+			width: 128px;
+			height: 128px;
+			border-radius: 50%;
+			background-color: #ddd;
+			position: relative;
+		}
+
+		.joystick-handle {
+			width: 64px;
+			height: 64px;
+			background-color: red;
+			border-radius: 50%;
+			position: absolute;
+			top: 32px;
+			left: 32px;
+			cursor: pointer;
+			transition: 0.2s ease;
+		}
+
+		#stick2 .joystick-handle {
+			background-color: blue;
+		}
+
+		#fs-button {
+			padding: 15px 30px;
+			background-color: #007bff;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 18px;
+		}
+
+		#warn {
+			background-color: #2f3235;
+			width: 100vw;
+			height: 100vh;
+			position: fixed;
+			display: none;
+			color: #f0f0f0;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+	</style>
+</head>
+
+<body>
+	<button id="fs-button">Mulai</button>
+	<div id="main-container">
+		<div class="joystick-menu">
+			<div class="joystick-settings">
+				<button>Menu</button>
+			</div>
+			<div class="joystick-status">
+				<div id="status1" style="color: red">Joystick 1: X: 0, Y: 0</div>
+				<div id="status2" style="color: blue">Joystick 2: X: 0, Y: 0</div>
+			</div>
+			<div class="joystick-logs">
+				<button>Logs</button>
+			</div>
+		</div>
+
+		<div class="joystick-container">
+			<div class="joystick-base" id="stick1">
+				<div class="joystick-handle"></div>
+			</div>
+			<div class="joystick-base" id="stick2">
+				<div class="joystick-handle"></div>
+			</div>
+		</div>
+	</div>
+	<div id="warn"><p>Ubah orientasi ke landscape</p></div>
+
+	<script>
+		window.addEventListener('load', function () {
+			if (!isMobileDevice()) {
+				document.getElementById("fs-button").textContent = "Perangkat tidak didukung";
+			}
+		});
+
+		function isMobileDevice() {
+			return /Mobi|Android/i.test(navigator.userAgent);
+		}
+
+		var isFullscreen = false;
+
+		function openFullscreen() {
+			const elem = document.documentElement;
+			if (elem.requestFullscreen) {
+				elem.requestFullscreen();
+				isFullscreen = true;
+				setOrientationStyle();
+			} else if (elem.mozRequestFullScreen) {
+				elem.mozRequestFullScreen();
+				isFullscreen = true;
+				setOrientationStyle();
+			} else if (elem.webkitRequestFullscreen) {
+				elem.webkitRequestFullscreen();
+				isFullscreen = true;
+				setOrientationStyle();
+			} else if (elem.msRequestFullscreen) {
+				elem.msRequestFullscreen();
+				isFullscreen = true;
+				setOrientationStyle();
+			}
+		}
+		
+		function setOrientationStyle() {
+			const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+			if (isLandscape && isFullscreen) {
+				document.getElementById('warn').style.display = 'none';
+			} else {
+				if (isFullscreen) {
+					document.getElementById('warn').style.display = 'flex';
+				} else {
+					document.getElementById('warn').style.display = 'none';
+				}
+			}
+		}
+
+		function closeFullscreen() {
+			document.getElementById('fs-button').style.display = 'flex';
+			document.getElementById('main-container').style.display = 'none';
+			setOrientationStyle();
+		}
+
+		document.addEventListener('touchmove', function (event) {
+			event.preventDefault();
+		}, {
+			passive: false
+		});
+
+		document.getElementById("fs-button").addEventListener('click', function () {
+			if (isMobileDevice()) {
+				openFullscreen();
+				document.getElementById('fs-button').style.display = 'none';
+				document.getElementById('main-container').style.display = 'flex';
+			}
+		});
+
+		window.addEventListener('resize', setOrientationStyle);
+
+		window.addEventListener('orientationchange', setOrientationStyle);
+
+		document.addEventListener('fullscreenchange', function () {
+			if (!document.fullscreenElement) {
+				isFullscreen = false;
+				closeFullscreen();
+			}
+		});
+
+		document.addEventListener('webkitfullscreenchange', function () {
+			if (!document.webkitFullscreenElement) {
+				isFullscreen = false;
+				closeFullscreen();
+			}
+		});
+
+		document.addEventListener('mozfullscreenchange', function () {
+			if (!document.mozFullScreenElement) {
+				isFullscreen = false;
+				closeFullscreen();
+			}
+		});
+
+		document.addEventListener('MSFullscreenChange', function () {
+			if (!document.fullscreenElement) {
+				isFullscreen = false;
+				closeFullscreen();
+			}
+		});
+
+		// Kelas JoystickController untuk mengontrol joystick
+		class JoystickController {
+			constructor(stickID, maxDistance, deadzone) {
+				this.id = stickID;
+				let stick = document.getElementById(stickID).querySelector(".joystick-handle");
+
+				this.dragStart = null;
+				this.touchId = null;
+				this.active = false;
+				this.value = { x: 0, y: 0 };
+
+				let self = this;
+
+				function handleDown(event) {
+					self.active = true;
+					stick.style.transition = "0s";
+					event.preventDefault();
+
+					if (event.changedTouches) {
+						self.dragStart = {
+							x: event.changedTouches[0].clientX,
+							y: event.changedTouches[0].clientY,
+						};
+						self.touchId = event.changedTouches[0].identifier;
+					} else {
+						self.dragStart = { x: event.clientX, y: event.clientY };
+					}
+				}
+
+				function handleMove(event) {
+					if (!self.active) return;
+
+					let touchmoveId = null;
+					if (event.changedTouches) {
+						for (let i = 0; i < event.changedTouches.length; i++) {
+							if (self.touchId == event.changedTouches[i].identifier) {
+								touchmoveId = i;
+								event.clientX = event.changedTouches[i].clientX;
+								event.clientY = event.changedTouches[i].clientY;
+							}
+						}
+						if (touchmoveId == null) return;
+					}
+
+					const xDiff = event.clientX - self.dragStart.x;
+					const yDiff = event.clientY - self.dragStart.y;
+					const angle = Math.atan2(yDiff, xDiff);
+					const distance = Math.min(maxDistance, Math.hypot(xDiff, yDiff));
+					const xPosition = distance * Math.cos(angle);
+					const yPosition = distance * Math.sin(angle);
+
+					stick.style.transform = `translate3d(${xPosition}px, ${yPosition}px, 0px)`;
+
+					const distance2 = distance < deadzone ? 0 : (maxDistance / (maxDistance - deadzone)) * (distance - deadzone);
+					const xPosition2 = distance2 * Math.cos(angle);
+					const yPosition2 = distance2 * Math.sin(angle);
+					const xPercent = parseFloat((xPosition2 / maxDistance).toFixed(4));
+					const yPercent = parseFloat((yPosition2 / maxDistance).toFixed(4));
+
+					self.value = { x: xPercent, y: yPercent };
+				}
+
+				function handleUp(event) {
+					if (!self.active) return;
+
+					if (event.changedTouches && self.touchId != event.changedTouches[0].identifier) return;
+
+					stick.style.transition = ".2s";
+					stick.style.transform = `translate3d(0px, 0px, 0px)`;
+
+					self.value = { x: 0, y: 0 };
+					self.touchId = null;
+					self.active = false;
+				}
+
+				stick.addEventListener("mousedown", handleDown);
+				stick.addEventListener("touchstart", handleDown);
+				document.addEventListener("mousemove", handleMove, { passive: false });
+				document.addEventListener("touchmove", handleMove, { passive: false });
+				document.addEventListener("mouseup", handleUp);
+				document.addEventListener("touchend", handleUp);
+			}
+		}
+
+		let joystick1 = new JoystickController("stick1", 64, 8);
+		let joystick2 = new JoystickController("stick2", 64, 8);
+
+		function update() {
+			document.getElementById("status1").innerText = "Joystick 1: X: " + joystick1.value.x + ", Y: " + joystick1.value.y;
+			document.getElementById("status2").innerText = "Joystick 2: X: " + joystick2.value.x + ", Y: " + joystick2.value.y;
+		}
+
+		function loop() {
+			requestAnimationFrame(loop);
+			update();
+		}
+
+		loop();
+	</script>
+</body>
+
+</html>
